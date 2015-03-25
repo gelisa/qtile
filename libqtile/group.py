@@ -30,6 +30,7 @@ import contextlib
 import xcffib
 import xcffib.xproto
 
+from . import ordered_set
 from . import command
 from . import hook
 from . import window
@@ -45,7 +46,7 @@ class _Group(command.CommandObject):
     def __init__(self, name, layout=None):
         self.name = name
         self.customLayout = layout  # will be set on _configure
-        self.windows = set()
+        self.windows = ordered_set.OrderedSet([])
         self.qtile = None
         self.layouts = []
         self.floating_layout = None
@@ -62,14 +63,37 @@ class _Group(command.CommandObject):
         self.screen = None
         self.currentLayout = 0
         self.focusHistory = []
-        self.windows = set()
+        self.windows = ordered_set.OrderedSet([])
         self.qtile = qtile
         self.layouts = [i.clone(self) for i in layouts]
         self.floating_layout = floating_layout.clone(self)
         if self.customLayout is not None:
             self.layout = self.customLayout
             self.customLayout = None
-
+    
+    def __str__(self):
+        output = 'Group named '+str(self.name)
+        try:
+            output+= ' at the screen '+str(self.screen.index)+'\n'
+        except:
+            output+= ' at the UNKNOWN screen\n'
+        output+='and my attributes are:\n'
+        for item in self.__dict__:
+            if not (self.__dict__[item] == None):
+                output+=('  '+item+'\t'+repr(self.__dict__[item])+'\n')
+            else:
+                output+=('  '+item)+':\t being '+str(self.__dict__[item])+'!\n'
+                
+        return output
+    
+    def __repr__(self):
+        output = 'Group named '+str(self.name)
+        try:
+            output+= ' at the screen '+str(self.screen.index)+'\n'
+        except:
+            output+= ' at the UNKNOWN screen\n'
+        return output
+    
     @property
     def currentWindow(self):
         try:
